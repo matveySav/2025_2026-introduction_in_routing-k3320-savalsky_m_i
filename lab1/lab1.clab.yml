@@ -1,0 +1,47 @@
+name: lab1
+
+mgmt:
+  network: custom_mgmt
+  ipv4-subnet: 172.20.20.0/24
+
+topology:
+  kinds:
+    vr-ros:
+      image: vrnetlab/mikrotik_routeros:6.47.9
+    linux:
+      image: alpine:3.22
+  nodes:
+    R01:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.2
+      startup-config: scripts/R01_setup.rsc
+    SW01.L3.01:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.3
+      startup-config: scripts/SW01_L3_01_setup.rsc
+    SW02.L3.01:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.4
+      startup-config: scripts/SW02_L3_01_setup.rsc
+    SW02.L3.02:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.5
+      startup-config: scripts/SW02_L3_02_setup.rsc
+    PC1:
+      kind: linux
+      mgmt-ipv4: 172.20.20.6
+      exec:
+        - udhcpc -i eth1
+        - ip route add 10.20.0.0/24 via 10.10.0.1
+    PC2:
+      kind: linux
+      mgmt-ipv4: 172.20.20.7
+      exec:
+        - udhcpc -i eth1
+        - ip route add 10.10.0.0/24 via 10.20.0.1
+  links:
+    - endpoints: ["R01:eth1", "SW01.L3.01:eth1"]
+    - endpoints: ["SW01.L3.01:eth2", "SW02.L3.01:eth1"]
+    - endpoints: ["SW01.L3.01:eth3", "SW02.L3.02:eth1"]
+    - endpoints: ["SW02.L3.01:eth2", "PC1:eth1"]
+    - endpoints: ["SW02.L3.02:eth2", "PC2:eth1"]
