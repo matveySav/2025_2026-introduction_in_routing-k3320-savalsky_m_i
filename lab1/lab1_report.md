@@ -141,6 +141,7 @@ add address=10.20.0.2/24 interface=vlan20
 
 /user add name=custom password=custom group=full
 /user remove admin
+/system identity set name=SW1_1
 ```
 ## 5. Свитчи среднего уровня SW02.L3.01/2
 Настраиваются анаолгична, т.к. сеть симметрична. Здесь также объединяем порты в мост, выделяя access порты (в pvid указываем соотв. vlan id). Остальное аналогично
