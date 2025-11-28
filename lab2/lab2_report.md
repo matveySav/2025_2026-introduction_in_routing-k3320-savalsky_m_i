@@ -5,7 +5,7 @@
 - Year: 2025/2026
 - Group: K3320
 - Author: Savalsky Matvey Ivanovich
-- Lab: Lab1
+- Lab: Lab2
 - Date of create: 28.11.2025
 - Date of finished:
 
