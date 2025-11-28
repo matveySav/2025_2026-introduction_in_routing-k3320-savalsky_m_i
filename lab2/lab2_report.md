@@ -176,6 +176,17 @@ remove admin
 ip route del default via 172.20.20.1
 udhcpc -i eth1
 ```
-Сначала удаляем маршрут, определяющий шлюз mgmt сети, поскольку он мешает шлюзу сети в которой находится ПК(где происходит выдача адресов с помощью dhcp). И с помощью `edhcpc -i eth1` получаем адрес на интерфейс ПК от dhcp сервера на роутере.
+Сначала удаляем маршрут, определяющий шлюз mgmt сети, поскольку он мешает шлюзу сети в которой находится ПК(где происходит выдача адресов с помощью dhcp). И с помощью `edhcpc -i eth1` получаем адрес на интерфейс ПК от dhcp сервера на роутере:
 
-## 5. 
+<img width="832" height="735" alt="image" src="https://github.com/user-attachments/assets/f017fe96-59d0-4f7f-95de-55f5f7de8e36" />
+
+
+## 5. Результаты пингов
+Пингуем роутеры Берлин и Франкфурт из Москвы:
+
+<img width="755" height="296" alt="image" src="https://github.com/user-attachments/assets/33641c0a-3bba-472e-be7b-59a183903784" />
+
+Пингуем ПК2 и ПК3 с ПК1:
+
+<img width="794" height="496" alt="image" src="https://github.com/user-attachments/assets/334f6aaa-d63c-463e-a6bc-d20629f2aabe" />
+
