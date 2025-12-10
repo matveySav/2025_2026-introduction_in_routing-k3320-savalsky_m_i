@@ -214,6 +214,15 @@ route add default gw 192.168.2.1 eth1
 
 <img width="928" height="364" alt="image" src="https://github.com/user-attachments/assets/6e870585-accc-4805-842e-ef7e112e0241" />
 
+Также можно прямо посмотреть на vpls интерфейс через `interface vpls monitor`:
+На `R1_NY`:
+
+<img width="1748" height="290" alt="image" src="https://github.com/user-attachments/assets/c7492b79-dea9-4340-9938-a4e687fff817" />
+
+На `R1_SPB`:
+
+<img width="1748" height="290" alt="image" src="https://github.com/user-attachments/assets/c409d4f2-0b13-4db2-9776-2870885aaa93" />
+
 ## 6. Таблицы маршрутизации на роутерах (и LFIB таблицы для меток MPLS)
 `NY`:
 
