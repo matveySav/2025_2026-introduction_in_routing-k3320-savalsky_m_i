@@ -201,40 +201,52 @@ route add default gw 192.168.2.1 eth1
 ```
 ## 5. LDP соседи
 Это чтобы показать, что IP/MPLS + EoMPLS (6.6.6.6 LSR будет соседом 1.1.1.1 LSR и наоборот) правильно настроилось
-NY:
+
+`NY`:
+
 <img width="928" height="364" alt="image" src="https://github.com/user-attachments/assets/bcb4257a-874f-45b3-8eed-57d09b77444f" />
-SPB:
+
+`SPB`:
+
 <img width="928" height="364" alt="image" src="https://github.com/user-attachments/assets/b5a430cd-0cd8-4450-a677-49bf358f0e3e" />
 
-Ну и R1_LBN, чтобы убедиться, что остальные роутеры в сети также правильно нашли соседей:
+Ну и `R1_LBN`, чтобы убедиться, что остальные роутеры в сети также правильно нашли соседей:
+
 <img width="928" height="364" alt="image" src="https://github.com/user-attachments/assets/6e870585-accc-4805-842e-ef7e112e0241" />
 
 ## 6. Таблицы маршрутизации на роутерах (и LFIB таблицы для меток MPLS)
-NY:
+`NY`:
+
 <img width="1773" height="862" alt="image" src="https://github.com/user-attachments/assets/033b4a1d-c827-4a3a-abe0-4e568ae085b8" />
 
-LND:
+`LND`:
+
 <img width="1773" height="862" alt="image" src="https://github.com/user-attachments/assets/ce90f5cb-be64-4bce-84e6-4d3813e6b49c" />
 
-LBN:
+`LBN`:
+
 <img width="1773" height="822" alt="image" src="https://github.com/user-attachments/assets/17580ffa-26a1-45cc-a0b8-a98231b11390" />
 
-HLK:
+`HKL`:
+
 <img width="1773" height="822" alt="image" src="https://github.com/user-attachments/assets/372894dc-4c19-45fc-950b-263d48346560" />
 
-MSC:
+`MSC`:
+
 <img width="1773" height="836" alt="image" src="https://github.com/user-attachments/assets/7b9f080c-3511-47b6-af2c-ce6c91981e73" />
 
-SPB:
+`SPB`:
+
 <img width="1773" height="858" alt="image" src="https://github.com/user-attachments/assets/21b09b26-866b-430b-8fbc-f820a48eb70e" />
 
 ## 7. Пинг между PC1 и SGI_prism
-От SGI_prism -> PC1:
+
+`От SGI_prism -> PC1`:
+
 <img width="912" height="595" alt="image" src="https://github.com/user-attachments/assets/97b26ad7-6130-4c40-b0cd-d65ec8614613" />
 
-Наоборот: 
+Наоборот:
+
 <img width="906" height="546" alt="image" src="https://github.com/user-attachments/assets/a7c9a29b-fba0-406f-8acf-707aa55fc255" />
 
-
-<img width="794" height="496" alt="image" src="https://github.com/user-attachments/assets/334f6aaa-d63c-463e-a6bc-d20629f2aabe" />
 
