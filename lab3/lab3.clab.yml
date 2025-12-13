@@ -38,19 +38,13 @@ topology:
     PC1:
       kind: linux
       mgmt-ipv4: 172.20.20.9
-      binds:
-        - configs/PC1.sh:/config.sh
       exec:
-        - chmod +x /config.sh
-        - /config.sh
+        - ifconfig eth1 192.168.1.2 netmask 255.255.255.0
     SGI.prism:
       kind: linux
       mgmt-ipv4: 172.20.20.2
-      binds:
-        - configs/SGI_prism.sh:/config.sh
       exec:
-        - chmod +x /config.sh
-        - /config.sh
+        - ifconfig eth1 192.168.1.1 netmask 255.255.255.0
   links:
     - endpoints: ["SGI.prism:eth1", "R1.NY:eth1"]
     - endpoints: ["R1.NY:eth2", "R1.LND:eth1"]

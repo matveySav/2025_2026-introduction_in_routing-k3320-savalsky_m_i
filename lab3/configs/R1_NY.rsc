@@ -1,5 +1,4 @@
 /ip address
-add address=192.168.1.1/24 interface=ether2
 add address=9.1.0.1/30 interface=ether3
 add address=9.2.0.1/30 interface=ether4
 
@@ -10,7 +9,6 @@ add address=9.2.0.1/30 interface=ether4
 /routing ospf network 
 add network=9.1.0.0/30 area=backbone
 add network=9.2.0.0/30 area=backbone
-add network=192.168.1.0/24 area=backbone 
 add network=1.1.1.1/32 area=backbone
 
 /mpls ldp set enabled=yes lsr-id=1.1.1.1 transport-address=1.1.1.1

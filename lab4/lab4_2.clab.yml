@@ -1,0 +1,65 @@
+name: lab4_2
+
+mgmt:
+  network: custom_mgmt
+  ipv4-subnet: 172.20.20.0/24
+
+topology:
+  kinds:
+    vr-ros:
+      image: vrnetlab/mikrotik_routeros:6.47.9
+    linux:
+      image: alpine:3.22
+  nodes:
+    R1.NY:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.2
+      startup-config: configs/R1.NY2.rsc
+    R1.LND:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.3
+      startup-config: configs/R1.LND2.rsc
+    R1.LBN:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.6
+      startup-config: configs/R1.LBN2.rsc
+    R1.HKI:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.4
+      startup-config: configs/R1.HKI2.rsc
+    R1.SPB:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.5
+      startup-config: configs/R1.SPB2.rsc
+    R1.SVL:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.7
+      startup-config: configs/R1.SVL2.rsc
+    PC1:
+      kind: linux
+      mgmt-ipv4: 172.20.20.8
+      exec:
+        - ifconfig eth1 192.168.1.10 netmask 255.255.255.0
+        - route add default gw 192.168.1.1 eth1
+    PC2:
+      kind: linux
+      mgmt-ipv4: 172.20.20.9
+      exec:
+        - ifconfig eth1 192.168.1.20 netmask 255.255.255.0
+        - route add default gw 192.168.1.2 eth1
+    PC3:
+      kind: linux
+      mgmt-ipv4: 172.20.20.10
+      exec:
+        - ifconfig eth1 192.168.1.30 netmask 255.255.255.0
+        - route add default gw 192.168.1.3 eth1
+  links:
+    - endpoints: ["PC1:eth1", "R1.NY:eth1"]
+    - endpoints: ["R1.NY:eth2", "R1.LND:eth1"]
+    - endpoints: ["R1.LND:eth2", "R1.HKI:eth1"]
+    - endpoints: ["R1.LND:eth3", "R1.LBN:eth1"]
+    - endpoints: ["R1.HKI:eth2", "R1.SPB:eth1"]
+    - endpoints: ["R1.SPB:eth2", "PC2:eth1"]
+    - endpoints: ["R1.HKI:eth3", "R1.LBN:eth2"]
+    - endpoints: ["R1.LBN:eth3", "R1.SVL:eth2"]
+    - endpoints: ["R1.SVL:eth1", "PC3:eth1"]
