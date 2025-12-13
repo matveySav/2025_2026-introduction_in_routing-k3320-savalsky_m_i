@@ -10,10 +10,9 @@
 - Date of finished:
 
 ## 1. Схема лабы
-В drawio нарисуем схему для 3-й лабы, определим адреса сетей и интерфейсов, mgmt сеть и loopback интерфейсы для роутеров. Получим:
+В drawio нарисуем схему для 3-й лабы, определим адреса сетей и интерфейсов, mgmt сеть и loopback интерфейсы для роутеров, выберем адреса для ПК в одной сети. Получим:
 
-<img width="1050" height="534" alt="lab3 drawio" src="https://github.com/user-attachments/assets/fd50654b-d236-464f-99e9-c4016c7e0ec9" />
-
+<img width="1071" height="554" alt="lab3 drawio" src="https://github.com/user-attachments/assets/1517a56a-2ce5-47ec-b65d-63afba7b45bf" />
 
 ## 2. Написание yml файла
 
@@ -59,19 +58,13 @@ topology:
     PC1:
       kind: linux
       mgmt-ipv4: 172.20.20.9
-      binds:
-        - configs/PC1.sh:/config.sh
       exec:
-        - chmod +x /config.sh
-        - /config.sh
+        - ifconfig eth1 192.168.1.2 netmask 255.255.255.0
     SGI.prism:
       kind: linux
       mgmt-ipv4: 172.20.20.2
-      binds:
-        - configs/SGI_prism.sh:/config.sh
       exec:
-        - chmod +x /config.sh
-        - /config.sh
+        - ifconfig eth1 192.168.1.1 netmask 255.255.255.0
   links:
     - endpoints: ["SGI.prism:eth1", "R1.NY:eth1"]
     - endpoints: ["R1.NY:eth2", "R1.LND:eth1"]
@@ -116,7 +109,7 @@ topology:
 ## 3. Конфиги для роутеров
 Конфиги роутеров аналогичны, мы выдаем ethernet интерфейсам адреса, которые определили в вышеприведенной схеме, создаем loopback интерфейс и присваеваем ему соотв. схеме ip.
 
-После настраиваем ospf (используем дефолтную instance, добавляем сети которые будем анонсировать (адреса сетей интерфейсов и loopback роутера)). 
+После настраиваем ospf (используем дефолтную instance, добавляем сети которые будем анонсировать (+ loopback роутера)). 
 
 После этого включаем ldp и указываем интерфейсы, которые будут находиться внутри MPLS сети. В конце меняем пользователя,пароль и имя устройства.
 
@@ -125,7 +118,6 @@ topology:
 Для `R1_NY`:
 ```
 /ip address
-add address=192.168.1.1/24 interface=ether2
 add address=9.1.0.1/30 interface=ether3
 add address=9.2.0.1/30 interface=ether4
 
@@ -136,7 +128,6 @@ add address=9.2.0.1/30 interface=ether4
 /routing ospf network 
 add network=9.1.0.0/30 area=backbone
 add network=9.2.0.0/30 area=backbone
-add network=192.168.1.0/24 area=backbone 
 add network=1.1.1.1/32 area=backbone
 
 /mpls ldp set enabled=yes lsr-id=1.1.1.1 transport-address=1.1.1.1
@@ -184,78 +175,70 @@ remove admin
 /system identity set name=Router_London
 ```
 ## 4. Конфиги ПК
-С помощью `binds` файлы конфигов с хоста будут доступны контейнерам с ПК (с помощью `chmod` делаем их исполняемыми и теперь их можно запускать). Сами конфиг: задаем статически ip и дефолтный шлюз:
-Для `SGI.prism`:
-```
-#!/bin/sh
+Прописываем статичный ip ПК1 и SGI_prism в одной сети
 
-ifconfig eth1 192.168.1.254 netmask 255.255.255.0
-route add default gw 192.168.1.1 eth1
-```
-Для `PC1`:
-```
-#!/bin/sh
+Для `SGI.prism`: `ifconfig eth1 192.168.1.1 netmask 255.255.255.0`
 
-ifconfig eth1 192.168.2.254 netmask 255.255.255.0
-route add default gw 192.168.2.1 eth1
-```
+Для `PC1`: `ifconfig eth1 192.168.1.2 netmask 255.255.255.0`
+
 ## 5. LDP соседи
 Это чтобы показать, что IP/MPLS + EoMPLS (6.6.6.6 LSR будет соседом 1.1.1.1 LSR и наоборот) правильно настроилось
 
 `NY`:
 
-<img width="928" height="364" alt="image" src="https://github.com/user-attachments/assets/bcb4257a-874f-45b3-8eed-57d09b77444f" />
+<img width="994" height="309" alt="image" src="https://github.com/user-attachments/assets/d57bb3b6-bb46-42df-bd61-ef37a946b585" />
 
 `SPB`:
 
-<img width="928" height="364" alt="image" src="https://github.com/user-attachments/assets/b5a430cd-0cd8-4450-a677-49bf358f0e3e" />
+<img width="994" height="309" alt="image" src="https://github.com/user-attachments/assets/3224ed5c-8539-457a-84f5-a4266f63ae5d" />
 
 Ну и `R1_LBN`, чтобы убедиться, что остальные роутеры в сети также правильно нашли соседей:
 
-<img width="928" height="364" alt="image" src="https://github.com/user-attachments/assets/6e870585-accc-4805-842e-ef7e112e0241" />
+<img width="994" height="309" alt="image" src="https://github.com/user-attachments/assets/a24d89bc-28fa-4887-b37f-5c8a1a2f6968" />
 
 Также можно прямо посмотреть на vpls интерфейс через `interface vpls monitor`:
 На `R1_NY`:
 
-<img width="1748" height="290" alt="image" src="https://github.com/user-attachments/assets/c7492b79-dea9-4340-9938-a4e687fff817" />
+<img width="567" height="170" alt="image" src="https://github.com/user-attachments/assets/280beaf3-8715-43ff-be9e-239b576a483c" />
 
 На `R1_SPB`:
 
-<img width="1748" height="290" alt="image" src="https://github.com/user-attachments/assets/c409d4f2-0b13-4db2-9776-2870885aaa93" />
+<img width="620" height="176" alt="image" src="https://github.com/user-attachments/assets/fea6755b-0250-49d5-b3b2-839ade44520a" />
 
 ## 6. Таблицы маршрутизации на роутерах (и LFIB таблицы для меток MPLS)
 `NY`:
 
-<img width="1773" height="862" alt="image" src="https://github.com/user-attachments/assets/033b4a1d-c827-4a3a-abe0-4e568ae085b8" />
+<img width="1138" height="789" alt="image" src="https://github.com/user-attachments/assets/9c6ab362-0da4-4c58-82df-cfbd8cede5f5" />
 
 `LND`:
 
-<img width="1773" height="862" alt="image" src="https://github.com/user-attachments/assets/ce90f5cb-be64-4bce-84e6-4d3813e6b49c" />
+<img width="1206" height="784" alt="image" src="https://github.com/user-attachments/assets/8825fba1-211e-4116-9965-b6e5784819d1" />
 
 `LBN`:
 
-<img width="1773" height="822" alt="image" src="https://github.com/user-attachments/assets/17580ffa-26a1-45cc-a0b8-a98231b11390" />
+<img width="1197" height="712" alt="image" src="https://github.com/user-attachments/assets/2f050e70-dee5-4a36-8135-3c43a5e83987" />
 
-`HKL`:
+`HKI`:
 
-<img width="1773" height="822" alt="image" src="https://github.com/user-attachments/assets/372894dc-4c19-45fc-950b-263d48346560" />
+<img width="1197" height="712" alt="image" src="https://github.com/user-attachments/assets/bdab4c5a-c2e2-4f2b-b069-3bcba648ae2a" />
 
 `MSC`:
 
-<img width="1773" height="836" alt="image" src="https://github.com/user-attachments/assets/7b9f080c-3511-47b6-af2c-ce6c91981e73" />
+<img width="1207" height="760" alt="image" src="https://github.com/user-attachments/assets/d0c0004e-e68a-4d88-99e3-ece61c12fb36" />
 
 `SPB`:
 
-<img width="1773" height="858" alt="image" src="https://github.com/user-attachments/assets/21b09b26-866b-430b-8fbc-f820a48eb70e" />
+<img width="1209" height="779" alt="image" src="https://github.com/user-attachments/assets/ebb90d7f-673f-4db1-8c00-a18903d10701" />
 
 ## 7. Пинг между PC1 и SGI_prism
 
 `От SGI_prism -> PC1`:
 
-<img width="912" height="595" alt="image" src="https://github.com/user-attachments/assets/97b26ad7-6130-4c40-b0cd-d65ec8614613" />
+<img width="885" height="586" alt="image" src="https://github.com/user-attachments/assets/c84d8e4d-2d39-43e2-995d-dd4446789dc5" />
 
 Наоборот:
 
-<img width="906" height="546" alt="image" src="https://github.com/user-attachments/assets/a7c9a29b-fba0-406f-8acf-707aa55fc255" />
+<img width="889" height="550" alt="image" src="https://github.com/user-attachments/assets/7e9062fc-6997-4b7b-9a26-db31b20ec896" />
+
 
 
