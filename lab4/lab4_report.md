@@ -222,4 +222,192 @@ route add default gw 192.168.1.1 eth1
 
 <img width="840" height="807" alt="image" src="https://github.com/user-attachments/assets/9770979c-9010-4dd8-bf33-87d4954de903" />
 
+# Часть 2
+
+## 1. Схема лабы
+Сама топология не меняется, просто меняем ip адреса пк так, чтобы они были в одной сети, поскольку организуем L2VPN 
+
+<img width="1191" height="651" alt="lab4_2 drawio" src="https://github.com/user-attachments/assets/55f4bdd7-230c-4bc3-b263-05aabc115a99" />
+
+## 2. Написание yml файла
+
+В clab.yml меняем файлы для конфигов роутера и ПК
+```
+name: lab4_2
+
+mgmt:
+  network: custom_mgmt
+  ipv4-subnet: 172.20.20.0/24
+
+topology:
+  kinds:
+    vr-ros:
+      image: vrnetlab/mikrotik_routeros:6.47.9
+    linux:
+      image: alpine:3.22
+  nodes:
+    R1.NY:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.2
+      startup-config: configs/R1.NY2.rsc
+    R1.LND:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.3
+      startup-config: configs/R1.LND2.rsc
+    R1.LBN:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.6
+      startup-config: configs/R1.LBN2.rsc
+    R1.HKI:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.4
+      startup-config: configs/R1.HKI2.rsc
+    R1.SPB:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.5
+      startup-config: configs/R1.SPB2.rsc
+    R1.SVL:
+      kind: vr-ros
+      mgmt-ipv4: 172.20.20.7
+      startup-config: configs/R1.SVL2.rsc
+    PC1:
+      kind: linux
+      mgmt-ipv4: 172.20.20.8
+      exec:
+        - ifconfig eth1 192.168.1.10 netmask 255.255.255.0
+    PC2:
+      kind: linux
+      mgmt-ipv4: 172.20.20.9
+      exec:
+        - ifconfig eth1 192.168.1.20 netmask 255.255.255.0
+    PC3:
+      kind: linux
+      mgmt-ipv4: 172.20.20.10
+      exec:
+        - ifconfig eth1 192.168.1.30 netmask 255.255.255.0
+  links:
+    - endpoints: ["PC1:eth1", "R1.NY:eth1"]
+    - endpoints: ["R1.NY:eth2", "R1.LND:eth1"]
+    - endpoints: ["R1.LND:eth2", "R1.HKI:eth1"]
+    - endpoints: ["R1.LND:eth3", "R1.LBN:eth1"]
+    - endpoints: ["R1.HKI:eth2", "R1.SPB:eth1"]
+    - endpoints: ["R1.SPB:eth2", "PC2:eth1"]
+    - endpoints: ["R1.HKI:eth3", "R1.LBN:eth2"]
+    - endpoints: ["R1.LBN:eth3", "R1.SVL:eth2"]
+    - endpoints: ["R1.SVL:eth1", "PC3:eth1"]
+```
+
+## 3. Конфиги для роутеров
+Аналогичны 1-й части лабы, только теперь bgp будет анонсировать маршруты внутри l2vpn между vpls интерфейсами (будут созданы если их нет), поэтому теперь address-families=l2vpn  </br>
+Также добавляем мост и в него интерфейс смотрящий на ПК, привязываем этот мост к bgp-vpls и прописываем RD,RT и site-id (должен быть уникален в одной l2vpn)
+
+Для `R1_NY`:
+```
+/ip address
+add address=9.1.0.1/30 interface=ether3
+
+/interface bridge add name=lo
+/ip address add address=1.1.1.1/32 interface=lo
+
+/routing ospf instance set default router-id=1.1.1.1
+/routing ospf network 
+add network=9.1.0.0/30 area=backbone
+add network=1.1.1.1/32 area=backbone
+
+/mpls ldp set enabled=yes lsr-id=1.1.1.1 transport-address=1.1.1.1
+/mpls ldp interface
+add interface=ether3
+
+/routing bgp instance set default as=65000 router-id=1.1.1.1
+/routing bgp peer
+add name=LND remote-address=2.2.2.2 remote-as=65000 route-reflect=no update-source=lo \
+address-families=ip,l2vpn
+/routing bgp network 
+add network=9.1.0.0/30 
+
+/interface bridge add name=vpn
+/interface bridge port add bridge=vpn interface=ether2
+
+/interface vpls bgp-vpls add bridge=vpn route-distinguisher=1:1 site-id=1 \
+import-route-targets=1:1 export-route-targets=1:1
+
+/user
+add name=custom password=custom group=full
+remove admin
+
+/system identity set name=Router_New_York
+```
+
+Для роутеров LND,LBN,HKI аналогичная настройка,только не надо на них настраивать bgp-vpls.(только address-families=l2vpn)
+
+Для `R1_LND`:
+```
+/ip address
+add address=9.1.0.2/30 interface=ether2
+add address=9.2.0.1/30 interface=ether3
+add address=9.4.0.1/30 interface=ether4
+
+/interface bridge add name=lo
+/ip address add address=2.2.2.2/32 interface=lo
+
+/routing ospf instance set default router-id=2.2.2.2
+/routing ospf network 
+add network=9.1.0.0/30 area=backbone
+add network=9.2.0.0/30 area=backbone
+add network=9.4.0.0/30 area=backbone
+add network=2.2.2.2/32 area=backbone
+
+/mpls ldp set enabled=yes lsr-id=2.2.2.2 transport-address=2.2.2.2
+/mpls ldp interface
+add interface=ether2
+add interface=ether3
+add interface=ether4
+
+/routing bgp instance set default as=65000 router-id=2.2.2.2 cluster-id=2.2.2.2
+/routing bgp peer
+add name=NY remote-address=1.1.1.1 remote-as=65000 route-reflect=yes update-source=lo \
+address-families=ip,l2vpn
+add name=LBN remote-address=5.5.5.5 remote-as=65000 route-reflect=no update-source=lo \
+address-families=ip,l2vpn
+add name=HKI remote-address=3.3.3.3 remote-as=65000 route-reflect=no update-source=lo \
+address-families=ip,l2vpn
+/routing bgp network 
+add network=9.1.0.0/30 
+add network=9.4.0.0/30
+add network=9.2.0.0/30
+
+/user
+add name=custom password=custom group=full
+remove admin
+
+/system identity set name=Router_London
+```
+## 4. Конфиги ПК
+Всем ПК настраиваем статичный ip в одной сети.
+Для `PC1`: `ifconfig eth1 192.168.1.10 netmask 255.255.255.0` </br>
+Для `PC2`: `ifconfig eth1 192.168.1.20 netmask 255.255.255.0` </br>
+Для `PC3`: `ifconfig eth1 192.168.1.30 netmask 255.255.255.0` </br>
+
+## 5. Таблицы маршрутизации на роутерах (и LFIB таблицы для меток MPLS) + BGP соседи и VPLS
+Для LND,LBN, HKI будут такие же как и в 1 части лабы.
+
+Для NY,SPB,SVL в таблице маршрутизации теперь не будет маршрута в соотв. 192.168.x.0/24 подсеть, тк не мы не указывали ip для интерфейса, смотрящего на ПК
+
+`R1.NY:`
+
+<img width="1780" height="781" alt="image" src="https://github.com/user-attachments/assets/3d0bba0b-81fc-4feb-9806-b2a3e39431cc" />
+
+`R1.SPB:`
+
+<img width="1780" height="781" alt="image" src="https://github.com/user-attachments/assets/0ea46d62-f34c-43a2-9ff0-11a3ee8d459f" />
+
+`R1.SVL:`
+
+<img width="1780" height="781" alt="image" src="https://github.com/user-attachments/assets/d6ae12d0-35b7-446b-a24c-0990bb174be0" />
+
+## 7. Пинг между ПК
+
+От ПК1 к ПК2 и ПК3:
+
+<img width="826" height="856" alt="image" src="https://github.com/user-attachments/assets/7349196c-e73a-4183-8c31-872842fd591b" />
 
