@@ -22,11 +22,11 @@ add interface=ether4
 /routing bgp instance set default as=65000 router-id=2.2.2.2 cluster-id=2.2.2.2
 /routing bgp peer
 add name=NY remote-address=1.1.1.1 remote-as=65000 route-reflect=yes update-source=lo \
-address-families=ip,vpnv4 nexthop-choice=force-self
+address-families=ip,vpnv4
 add name=LBN remote-address=5.5.5.5 remote-as=65000 route-reflect=no update-source=lo \
-address-families=ip,vpnv4 nexthop-choice=force-self
+address-families=ip,vpnv4
 add name=HKI remote-address=3.3.3.3 remote-as=65000 route-reflect=no update-source=lo \
-address-families=ip,vpnv4 nexthop-choice=force-self
+address-families=ip,vpnv4
 /routing bgp network 
 add network=9.1.0.0/30 
 add network=9.4.0.0/30

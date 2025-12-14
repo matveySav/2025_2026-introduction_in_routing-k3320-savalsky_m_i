@@ -1,6 +1,5 @@
 /ip address
 add address=9.6.0.2/30 interface=ether3
-add address=192.168.3.1/24 interface=ether2
 
 /interface bridge add name=lo
 /ip address add address=6.6.6.6/32 interface=lo
@@ -17,13 +16,15 @@ add interface=ether3
 /routing bgp instance set default as=65000 router-id=6.6.6.6
 /routing bgp peer
 add name=LBN remote-address=5.5.5.5 remote-as=65000 route-reflect=no update-source=lo \
-address-families=ip,vpnv4 nexthop-choice=force-self
+address-families=ip,l2vpn
 /routing bgp network 
 add network=9.6.0.0/30 
 
-/ip route vrf add disabled=no routing-mark=devops route-distinguisher=1.1.1.1:100 \ 
-export-route-targets=1.1.1.1:100 import-route-targets=1.1.1.1:100 interfaces=ether2
-/routing bgp instance vrf add instance=default routing-mark=devops redistribute-connected=yes
+/interface bridge add name=vpn
+/interface bridge port add bridge=vpn interface=ether2
+
+/interface vpls bgp-vpls add bridge=vpn route-distinguisher=1:1 site-id=3 \
+import-route-targets=1:1 export-route-targets=1:1
 
 /user
 add name=custom password=custom group=full

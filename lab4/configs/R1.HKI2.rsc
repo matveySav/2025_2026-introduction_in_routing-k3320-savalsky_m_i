@@ -22,11 +22,11 @@ add interface=ether4
 /routing bgp instance set default as=65000 router-id=3.3.3.3 cluster-id=3.3.3.3
 /routing bgp peer
 add name=LND remote-address=2.2.2.2 remote-as=65000 route-reflect=no update-source=lo \
-address-families=ip,vpnv4 nexthop-choice=force-self
+address-families=ip,l2vpn
 add name=LBN remote-address=5.5.5.5 remote-as=65000 route-reflect=no update-source=lo \
-address-families=ip,vpnv4 nexthop-choice=force-self
+address-families=ip,l2vpn
 add name=SPB remote-address=4.4.4.4 remote-as=65000 route-reflect=yes update-source=lo \
-address-families=ip,vpnv4 nexthop-choice=force-self
+address-families=ip,l2vpn
 /routing bgp network 
 add network=9.2.0.0/30 
 add network=9.3.0.0/30

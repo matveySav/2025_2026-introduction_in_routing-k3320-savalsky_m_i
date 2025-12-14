@@ -17,7 +17,7 @@ add interface=ether3
 /routing bgp instance set default as=65000 router-id=6.6.6.6
 /routing bgp peer
 add name=LBN remote-address=5.5.5.5 remote-as=65000 route-reflect=no update-source=lo \
-address-families=ip,vpnv4 nexthop-choice=force-self
+address-families=ip,vpnv4
 /routing bgp network 
 add network=9.6.0.0/30 
 
